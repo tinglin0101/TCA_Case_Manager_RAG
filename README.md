@@ -16,12 +16,12 @@
 
 ## 技術架構
 
-| 層 | 用的東西 |
-|----|---------|
-| LLM | **本地端(預設)**:Ollama 等 OpenAI 相容伺服器(建議 `qwen2.5:14b`,繁中佳);**或**雲端 OpenAI(`gpt-4o-mini`)。用 `.env` 的 `LLM_PROVIDER` 一鍵切換 |
-| RAG | Chroma 向量庫(本機持久化,免部署)+ 多語系 embedding(支援繁中) |
-| 後端 | FastAPI |
-| 前端 | Streamlit |
+| 層   | 用的東西                                                                                                                                                               |
+| ---- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| LLM  | **本地端(預設)**:Ollama 跑 **TAIDE v2.0**(台灣國科會、專為台灣繁中調校);**或**雲端 OpenAI(`gpt-4o-mini`)。用 `.env` 的 `LLM_PROVIDER` 一鍵切換 |
+| RAG  | Chroma 向量庫(本機持久化,免部署)+ 多語系 embedding(支援繁中)                                                                                                           |
+| 後端 | FastAPI                                                                                                                                                                |
+| 前端 | Streamlit                                                                                                                                                              |
 
 > 💡 **關於本地 vs 雲端 LLM**:embedding(檢索)本來就在本地跑,免 API。LLM 這層現在也預設走本地端(Ollama),整條管線可**完全離線、資料不出機房**——適合病歷等敏感資料。未來換更強的本地模型,只要改 `.env` 的 `LLM_MODEL`,程式不用動。
 
@@ -63,11 +63,14 @@ cp .env.example .env
 
 ```bash
 # 1) 安裝 Ollama:https://ollama.com/download
-# 2) 下載模型(繁中建議 qwen2.5;硬體好可用 14b/32b):
-ollama pull qwen2.5:14b
+# 2) 下載 TAIDE v2.0(台灣繁中專用,適合衛教問答的在地語感):
+ollama pull hf.co/tetf/Llama-3.1-TAIDE-LX-8B-Chat-GGUF:Q8_0
 ```
-`.env` 保持預設即可(`LLM_PROVIDER=local`、`LLM_MODEL=qwen2.5:14b`)。
+
+`.env` 保持預設即可(`LLM_PROVIDER=local`)。
 Ollama 會在 `http://localhost:11434` 常駐,程式透過 OpenAI 相容 API 呼叫它。
+
+> **為什麼選 TAIDE v2.0?** 國科會 TAIDE 計畫開發、基於 Llama 3.1-8B,專為台灣繁中的用詞與語感調校(例:品質 vs 質量)。衛教是直接對病人講話的場景,在地語感很重要。想要泛用能力更強可改用 Qwen:`ollama pull qwen2.5:14b` 並把 `.env` 的 `LLM_MODEL` 改成 `qwen2.5:14b`。
 
 **(B) 雲端 OpenAI** — 想用雲端時,編輯 `.env`:
 
@@ -82,6 +85,7 @@ OPENAI_API_KEY=sk-你的金鑰
 ```bash
 python -m scripts.ingest
 ```
+
 > 第一次會自動下載 embedding 模型(約 470MB),請耐心等候。
 
 ### 4. 啟動後端
@@ -122,6 +126,7 @@ curl http://localhost:8000/escalations
 ## 怎麼算 MVP 驗證成功
 
 抽 30~50 題常見衛教問題,由個案管理師判定:
+
 - **準確率**:答對且有依據的比例(目標可先設 ≥ 80%)
 - **轉介判斷**:該轉真人時有沒有正確轉介(不亂答)
 - **有用性**:個管師/病人覺得省時、願意用

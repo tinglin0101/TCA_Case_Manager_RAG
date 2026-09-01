@@ -24,10 +24,16 @@ LLM_PROVIDER = os.getenv("LLM_PROVIDER", "local").strip().lower()
 # 換 llama.cpp / LM Studio / vLLM 也只要改這行。
 LLM_BASE_URL = os.getenv("LLM_BASE_URL", "http://localhost:11434/v1")
 
-# 模型名稱：
-#   local  → 例如 qwen2.5:14b、qwen2.5:32b（需先 `ollama pull <模型>`）
+# 模型名稱（需先 `ollama pull <模型>`）：
+#   local 預設用 TAIDE v2.0（Llama-3.1-TAIDE-LX-8B-Chat）——台灣國科會 TAIDE 計畫開發，
+#     專為台灣繁體中文的用詞與語感調校，最適合「直接面對病人的衛教問答」；且可完全離線，
+#     病歷等敏感資料不出機房。想要泛用能力更強可改成 qwen2.5:14b / qwen2.5:32b。
 #   openai → 例如 gpt-4o-mini、gpt-4o
-_DEFAULT_MODEL = "qwen2.5:14b" if LLM_PROVIDER == "local" else "gpt-4o-mini"
+_DEFAULT_MODEL = (
+    "hf.co/tetf/Llama-3.1-TAIDE-LX-8B-Chat-GGUF:Q8_0"
+    if LLM_PROVIDER == "local"
+    else "gpt-4o-mini"
+)
 LLM_MODEL = os.getenv("LLM_MODEL", _DEFAULT_MODEL)
 
 # API 金鑰：雲端要填真金鑰；本地端不驗證，隨便給個非空字串即可。

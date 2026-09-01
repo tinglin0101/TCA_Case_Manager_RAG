@@ -60,15 +60,26 @@ SYSTEM_PROMPT = """你是醫院個案管理系統中的「衛教問答助理」�
 
 # 本地模型沒有 OpenAI 那種「保證符合 schema」的強制結構化輸出，
 # 因此把要求的 JSON 格式明白寫進提示，並要求「只輸出 JSON」。
+# 另外針對 8B 級模型較弱的「轉介判斷」，用明確規則＋範例再強調一次。
 _JSON_FORMAT_INSTRUCTION = """
 
-請「只輸出一個 JSON 物件」，前後不要有任何說明文字或 markdown 標記，格式如下：
+請「只輸出一個 JSON 物件」，前後不要有任何說明文字或 markdown 標記，也不要在 JSON 後面
+補上任何空白或重複字元。格式如下：
 {
   "can_answer": true 或 false,
-  "answer": "給病人／家屬的回答文字（繁體中文）",
+  "answer": "給病人／家屬的回答文字（繁體中文，簡潔，不要超過 300 字）",
   "sources_used": [1, 2]
 }
-其中 sources_used 是你實際引用到的來源編號陣列，若無則給空陣列 []。"""
+其中 sources_used 是你實際引用到的來源編號陣列，若無則給空陣列 []。
+
+can_answer 的判斷特別重要：
+- 只要問題涉及「診斷、判讀檢驗數值、調整藥物或胰島素劑量、研判是否為某種疾病、
+  緊急處置」，就一律把 can_answer 設為 false（這些必須轉給真人個案管理師），
+  即使你想給一般性建議也一樣要設 false。
+- 只有當知識庫內容足以「直接回答一般衛教問題」時，can_answer 才設 true。
+範例：
+  問「我的胰島素劑量該調成多少」→ {"can_answer": false, "answer": "...我會幫您轉給個案管理師...", "sources_used": []}
+  問「糖尿病飲食要注意什麼」→ {"can_answer": true, "answer": "...", "sources_used": [1]}"""
 
 # 解析失敗時的安全預設：一律轉介，絕不亂答。
 _FALLBACK_ANSWER = Answer(
@@ -128,6 +139,10 @@ def _answer_local(client: OpenAI, user_prompt: str) -> Answer:
         messages=messages,
         temperature=config.LLM_TEMPERATURE,
         max_tokens=2000,
+        # 抑制小模型「答完後退化成重複字元」的問題（曾見過整串 \t 撐爆長度上限、
+        # 導致 JSON 被截斷）。penalty 讓它答完就收尾。
+        frequency_penalty=0.6,
+        presence_penalty=0.3,
     )
     try:
         # 優先用 JSON 模式（多數本地伺服器支援）；不支援就退回一般生成。
@@ -165,4 +180,31 @@ def _parse_answer(raw: str) -> Answer:
         data = json.loads(text)
         return Answer.model_validate(data)
     except (json.JSONDecodeError, ValidationError, TypeError):
+        # 小模型有時答案本身正確，但結尾多了雜訊／少了收尾的 } 而無法整段解析。
+        # 這裡用正則從殘缺 JSON 中搶救 can_answer / answer / sources_used，
+        # 救得回來就別浪費一個好答案；真的救不回來才安全轉介。
+        return _salvage_answer(text)
+
+
+def _salvage_answer(text: str) -> Answer:
+    """從截斷或帶雜訊的 JSON 片段中盡量還原成 Answer；失敗則回傳安全轉介預設。"""
+    m_can = re.search(r'"can_answer"\s*:\s*(true|false)', text, re.IGNORECASE)
+    # 抓 "answer": "……"，允許字串未收尾（截斷）。
+    m_ans = re.search(r'"answer"\s*:\s*"((?:[^"\\]|\\.)*)', text)
+    if not (m_can and m_ans):
         return _FALLBACK_ANSWER
+
+    can_answer = m_can.group(1).lower() == "true"
+    try:
+        # 把抓到的內容當成 JSON 字串內容還原跳脫字元（\n、\" 等）。
+        answer = json.loads('"' + m_ans.group(1) + '"')
+    except json.JSONDecodeError:
+        answer = m_ans.group(1)
+    answer = answer.strip()
+    if not answer:
+        return _FALLBACK_ANSWER
+
+    m_src = re.search(r'"sources_used"\s*:\s*\[([\d,\s]*)\]', text)
+    sources = [int(n) for n in re.findall(r"\d+", m_src.group(1))] if m_src else []
+
+    return Answer(can_answer=can_answer, answer=answer, sources_used=sources)
