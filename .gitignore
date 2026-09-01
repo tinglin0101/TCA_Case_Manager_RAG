@@ -1,0 +1,19 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+env/
+*.egg-info/
+
+# 環境變數（含 API 金鑰，絕對不要 commit）
+.env
+
+# 執行時產生的資料
+data/chroma/
+data/escalations.jsonl
+
+# OS / 編輯器
+.DS_Store
+.idea/
+.vscode/

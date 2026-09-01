@@ -1,0 +1,17 @@
+# --- Claude / LLM ---
+anthropic>=1.0.0
+python-dotenv>=1.0            # 讀取 .env
+
+# --- 後端 API ---
+fastapi>=0.110
+uvicorn[standard]>=0.29
+python-multipart>=0.0.9      # FastAPI 檔案上傳需要
+
+# --- RAG / 向量庫 ---
+chromadb>=0.5
+sentence-transformers>=2.7    # 多語系 embedding（支援繁體中文）
+pypdf>=4.2                    # 解析 PDF 衛教單
+
+# --- 前端 ---
+streamlit>=1.35
+requests>=2.31
