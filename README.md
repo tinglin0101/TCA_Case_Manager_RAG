@@ -91,9 +91,11 @@ python -m scripts.ingest
 ### 4. 啟動後端
 
 ```bash
-uvicorn app.main:app --reload
+uvicorn app.main:app --host 127.0.0.1 --port 8000 --reload
 # API 文件:http://localhost:8000/docs
 ```
+
+> 前後端都在同一台跑,後端綁 `127.0.0.1` 即可(前端也在同機,`localhost:8000` 對它就是本機)。要從外部直連後端才需要 `--host 0.0.0.0`,但一般建議走上面的 SSH 埠轉發、不要對外開埠。
 
 ### 5. 啟動前端(另開一個終端機)
 
@@ -101,6 +103,43 @@ uvicorn app.main:app --reload
 streamlit run ui/streamlit_app.py
 # 瀏覽器開 http://localhost:8501
 ```
+
+---
+
+## 在遠端主機執行、從本機瀏覽器存取(SSH 埠轉發)
+
+把程式跑在遠端主機(例如校園/機房 PC),在自己筆電的瀏覽器操作前端時,常會遇到:
+
+> 瀏覽器直接開 `http://<遠端IP>:8501` → **連不上 / 連線被拒絕**
+
+**這通常不是程式壞了,而是防火牆/代理擋掉了對外埠。** 校園網、公司 Zscaler 之類的環境往往只放行 SSH(22 埠),不放行 8501/8000。Streamlit 本身有正常監聽(綁在 `0.0.0.0:8501`),只是外部連不進去。
+
+**解法:走已經通的 SSH 連線,把埠「轉發」到本機,繞過防火牆。**
+
+### 方法 A(推薦)— VS Code Remote-SSH 埠轉發
+
+若你是用 VS Code Remote-SSH 連遠端:
+
+1. 下方面板點 **「連接埠 / PORTS」** 頁籤(在 TERMINAL 旁邊)。
+2. 按 **Forward a Port**,輸入 `8501`。
+3. 點它產生的 `localhost:8501` 連結,或本機瀏覽器直接開 `http://localhost:8501`。
+
+VS Code 會透過 SSH 把流量導過去,防火牆不用動任何設定。
+
+### 方法 B — 手動 SSH 通道(在「本機」終端機執行)
+
+```bash
+ssh -L 8501:localhost:8501 -L 8000:localhost:8000 <使用者>@<遠端IP>
+```
+
+連上後,本機瀏覽器開 `http://localhost:8501`。
+
+> ⚠️ 轉發後你開的是 **`localhost:8501`**,不是 `<遠端IP>:8501`。重點是流量走 SSH。
+
+### 注意事項
+
+- **後端也要在遠端啟動**:前端會去打 `http://localhost:8000`,若後端(uvicorn)沒開,一按送出/上傳就會報「呼叫後端失敗」。前後端都在遠端跑,所以後端只需在遠端起來即可,不強制轉發 8000(想在本機看 `/docs` 才需順便轉發 8000)。
+- **HuggingFace / 模型下載都發生在遠端**:embedding 模型與 Ollama 抓模型都在遠端執行。只要**全部在遠端跑、本機只透過埠轉發看畫面**,本機能不能連 HuggingFace 完全不影響。若本機的網路擋 HuggingFace,不用理它——別在本機跑 `ingest`/模型即可。
 
 ---
 
