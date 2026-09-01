@@ -2,7 +2,7 @@
 
 個案管理系統的最小可行產品(MVP)。這一版**只做「衛教問答」**這一條完整迴圈,用來驗證整條 RAG 管線:
 
-> 衛教文件進知識庫 → 檢索到對的段落 → Claude 生成「有根據、附出處」的回答 → 答不了就轉介個案管理師
+> 衛教文件進知識庫 → 檢索到對的段落 → LLM 生成「有根據、附出處」的回答 → 答不了就轉介個案管理師
 
 評估分級、資源比對、生理數據紀錄等其他功能,**先不做**,等這一條驗證成功再擴充。
 
@@ -18,17 +18,19 @@
 
 | 層 | 用的東西 |
 |----|---------|
-| LLM | Claude(預設 `claude-opus-5`,可改 `claude-sonnet-5`) |
+| LLM | **本地端(預設)**:Ollama 等 OpenAI 相容伺服器(建議 `qwen2.5:14b`,繁中佳);**或**雲端 OpenAI(`gpt-4o-mini`)。用 `.env` 的 `LLM_PROVIDER` 一鍵切換 |
 | RAG | Chroma 向量庫(本機持久化,免部署)+ 多語系 embedding(支援繁中) |
 | 後端 | FastAPI |
 | 前端 | Streamlit |
+
+> 💡 **關於本地 vs 雲端 LLM**:embedding(檢索)本來就在本地跑,免 API。LLM 這層現在也預設走本地端(Ollama),整條管線可**完全離線、資料不出機房**——適合病歷等敏感資料。未來換更強的本地模型,只要改 `.env` 的 `LLM_MODEL`,程式不用動。
 
 ```
 app/
   config.py        # 設定與路徑
   extract.py       # 從 txt/md/pdf 擷取文字
   store.py         # 切塊、入庫、檢索(Chroma)
-  llm.py           # Claude 問答 + 結構化輸出(能否回答/答案/出處)
+  llm.py           # OpenAI 問答 + 結構化輸出(能否回答/答案/出處)
   escalations.py   # 轉介清單(JSONL)
   main.py          # FastAPI 端點
 ui/
@@ -51,11 +53,28 @@ source .venv/bin/activate        # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-### 2. 設定 API 金鑰
+### 2. 設定 LLM
 
 ```bash
 cp .env.example .env
-# 編輯 .env,填入你的 ANTHROPIC_API_KEY
+```
+
+**(A) 本地端 LLM(預設,推薦)** — 資料不出機房、免 API 金鑰:
+
+```bash
+# 1) 安裝 Ollama:https://ollama.com/download
+# 2) 下載模型(繁中建議 qwen2.5;硬體好可用 14b/32b):
+ollama pull qwen2.5:14b
+```
+`.env` 保持預設即可(`LLM_PROVIDER=local`、`LLM_MODEL=qwen2.5:14b`)。
+Ollama 會在 `http://localhost:11434` 常駐,程式透過 OpenAI 相容 API 呼叫它。
+
+**(B) 雲端 OpenAI** — 想用雲端時,編輯 `.env`:
+
+```
+LLM_PROVIDER=openai
+LLM_MODEL=gpt-4o-mini
+OPENAI_API_KEY=sk-你的金鑰
 ```
 
 ### 3. 匯入範例衛教單(或放你自己的檔到 data/docs/)
