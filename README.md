@@ -56,7 +56,7 @@ pip install -r requirements.txt
 ### 2. 設定 LLM
 
 ```bash
-cp .env.example .env
+cp .env
 ```
 
 **(A) 本地端 LLM(預設,推薦)** — 資料不出機房、免 API 金鑰:

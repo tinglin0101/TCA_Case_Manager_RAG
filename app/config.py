@@ -1,4 +1,3 @@
-"""集中管理設定與路徑。所有可調參數都能用環境變數覆寫（見 .env.example）。"""
 import os
 from pathlib import Path
 
