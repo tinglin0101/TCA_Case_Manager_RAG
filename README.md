@@ -36,9 +36,17 @@ app/
 ui/
   streamlit_app.py # 簡易前端
 scripts/
-  ingest.py        # 批次匯入 data/docs/ 內所有文件
+  ingest.py             # 批次匯入 data/docs/ 內所有文件
+  make_eval_template.py # 產生評測題庫空白範本
+  run_eval.py           # 跑題庫,輸出給個管師人工打分的 Excel
+tests/                  # 自動化測試(pytest);不需人工打分,見下方「自動化測試」
+  dataset.py            # 讀題庫 CSV
+  scoring.py            # 自動評分(字元 bigram 覆蓋率、來源比對)
+  runner.py             # 跑「檢索 → 作答」並收集結果
+  report.py             # 輸出 HTML/JSON 報表
 data/
-  docs/            # 放衛教單原始檔(附一份糖尿病範例)
+  docs/                 # 放衛教單原始檔(附一份糖尿病範例)
+  eval/                 # 題庫 CSV 與評測結果
 ```
 
 ---
@@ -159,6 +167,63 @@ curl -X POST http://localhost:8000/ask \
 # 看轉介清單
 curl http://localhost:8000/escalations
 ```
+
+---
+
+## 自動化測試(tests/)
+
+`scripts/run_eval.py` 是「跑一輪,輸出 Excel 給個管師人工打分」;`tests/` 則是**不需要人工打分**的自動化測試,吃的是同一份題庫 `data/eval/eval_questions.csv`,用來擋「改壞了卻沒發現」的退步。
+
+兩者互補:自動化測試守**機械可驗**的性質(有沒有撈到對的衛教單、有沒有附出處、該不該轉介);**醫療正確性**仍由個案管理師用 Excel 複核。
+
+### 三層,缺什麼就跳過什麼
+
+| 層             | 測什麼                               | 需要                    | 指令                                        | 耗時    |
+| -------------- | ------------------------------------ | ----------------------- | ------------------------------------------- | ------- |
+| 題庫健檢＋單元 | 題庫欄位、來源檔存在、JSON 容錯解析  | 什麼都不用              | `python -m pytest -m "unit or dataset"`      | 約 1 秒 |
+| 檢索           | 有沒有撈到題庫標註的那份衛教單       | 已 ingest 的向量庫      | `python -m pytest -m retrieval`              | 數十秒  |
+| 端到端         | 答不答得出來、附不附出處、轉不轉介   | Ollama(或 OpenAI 金鑰)  | `python -m pytest --e2e`                     | 5~30 分 |
+
+環境沒準備好不會噴 traceback,而是 skip 並直接告訴你要跑哪一行指令(例如「請先執行 python -m scripts.ingest」「請執行 ollama pull ...」)。
+
+### 常用指令
+
+```bash
+python -m pytest                          # 預設:題庫健檢＋單元＋檢索(不呼叫 LLM)
+python -m pytest --e2e --limit 5          # 端到端先試跑 5 題,確認接得起來
+python -m pytest --e2e                    # 完整跑 50 題
+python -m pytest -m gate --e2e            # CI 用:只跑驗收門檻,看整體達不達標
+python -m pytest --from-json=data/eval/auto_test_xxx.json   # 用上次的結果重算,不再呼叫模型
+```
+
+> 帶路徑的選項請用 `--from-json=路徑` 這種**等號寫法**;寫成空白分隔時 pytest 會把路徑誤認成測試目錄。
+
+### 自動算的指標與門檻
+
+| 指標             | 意思                                       | 門檻選項                   | 預設   |
+| ---------------- | ------------------------------------------ | -------------------------- | ------ |
+| 檢索命中率       | 題庫標註的來源文件有出現在 top-k           | `--min-retrieval-recall`   | 0.85   |
+| 誤轉介率         | 衛教單答得出來卻轉給個管師(洗版待辦清單)   | `--max-escalation-rate`    | 0.20   |
+| 回答附出處比例   | 有回答的題目中,附了引用的比例               | `--min-citation-rate`      | 0.80   |
+| 引用文件正確率   | 引用到的就是題庫標註的那份衛教單            | `--min-citation-accuracy`  | 0.70   |
+| 平均覆蓋率       | 標準答案的重點有沒有被講到(粗篩答非所問)   | `--min-coverage`           | 0.35   |
+| 漏轉題數         | 該轉介卻自己亂答(轉介探針,見下)             | 固定為 0                   | 0      |
+
+**覆蓋率是用字元 bigram 比對算的,只能抓「答非所問」,不等於醫療正確性。**
+門檻預設值是初值,**第一次跑完請照實測數字校準**(例如實測誤轉介率 30%,就先把門檻訂在 0.30 擋住退步,再想辦法往下壓)。
+
+轉介判斷兩個方向都測:
+- **誤轉介**(不該轉卻轉)——題庫 50 題都測。這正是 `note.md` 記的那個待討論問題,現在變成可量化的數字。
+- **漏轉**(該轉卻自己答)——`tests/test_escalation.py` 用 4 題探針,題目只取 `app/llm.py` 提示詞裡**明文寫死**的轉介情境(調劑量、判讀檢驗值、診斷、急救)。爭議中的「特定食物可不可以吃」刻意不放,等團隊拍板後在題庫 CSV 加一欄「應轉介」填是/否,測試會自動納入。
+
+### 報表
+
+每次跑完會在 `data/eval/` 產生兩個檔:
+
+- `auto_test_<模型>_<時間>.html` — 瀏覽器直接開,含總覽、門檻對照、分主題統計、逐題明細(檢索未命中/被轉介/出錯的列標紅底)
+- `auto_test_<模型>_<時間>.json` — 同一份資料的機器可讀版,可用 `--from-json=` 重算,或拿來比較不同模型的分數
+
+測試走的是和 `/ask` 相同的路徑(`store.query` → `llm.answer_question`),但**不會寫入** `data/escalations.jsonl`,不會污染正式轉介清單。
 
 ---
 

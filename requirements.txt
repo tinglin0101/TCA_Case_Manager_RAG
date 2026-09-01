@@ -17,3 +17,5 @@ pypdf>=4.2                    # 解析 PDF 衛教單
 # --- 前端 ---
 streamlit>=1.35
 requests>=2.31
+# --- 測試（開發用；只跑 pytest 不需要，但 python -m pytest 需要）---
+pytest>=8.0                   # 自動化測試：python -m pytest（見 tests/ 與 README）
