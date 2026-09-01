@@ -13,6 +13,9 @@ env/
 data/chroma/
 data/escalations.jsonl
 
+# 評測產生的檔（題庫 CSV 有進版控；範本與每次跑的結果不進）
+data/eval/*.xlsx
+
 # OS / 編輯器
 .DS_Store
 .idea/
