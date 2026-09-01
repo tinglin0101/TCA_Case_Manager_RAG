@@ -1,0 +1,384 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TCA 個案管理系統 — 衛教問答功能說明</title>
+<style>
+  :root{
+    --ink:#1a1d21; --ink-2:#4a525c; --ink-3:#767f8a;
+    --line:#e2e6ea; --line-2:#eef1f4;
+    --bg:#ffffff; --bg-2:#f7f9fb;
+    --brand:#2f5597; --brand-soft:#eaf0fa;
+    --ok:#1c7c54; --ok-soft:#e6f4ee;
+    --warn:#a86b00; --warn-soft:#fdf3e0;
+    --stop:#b3261e; --stop-soft:#fdeceb;
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0; background:var(--bg-2); color:var(--ink);
+    font-family:"Microsoft JhengHei","PingFang TC","Noto Sans TC","Hiragino Sans TC",system-ui,-apple-system,"Segoe UI",sans-serif;
+    font-size:15px; line-height:1.75;
+  }
+  .page{max-width:920px; margin:0 auto; background:var(--bg); padding:0 0 64px;
+        box-shadow:0 0 0 1px var(--line), 0 2px 24px rgba(16,24,40,.05);}
+  header.cover{padding:48px 56px 34px; border-bottom:3px solid var(--brand);}
+  .eyebrow{font-size:13px; letter-spacing:.14em; color:var(--brand); font-weight:700; margin:0 0 10px;}
+  h1{font-size:31px; line-height:1.3; margin:0 0 12px; letter-spacing:-.01em;}
+  .lede{font-size:16.5px; color:var(--ink-2); margin:0 0 22px; max-width:62ch;}
+  .meta{display:flex; flex-wrap:wrap; gap:8px 28px; font-size:13.5px; color:var(--ink-3);}
+  .meta b{color:var(--ink-2); font-weight:600;}
+  .badge{display:inline-block; padding:3px 11px; border-radius:999px; font-size:12.5px; font-weight:700; vertical-align:2px;}
+  .badge.mvp{background:var(--warn-soft); color:var(--warn);}
+  section{padding:34px 56px 4px;}
+  section + section{border-top:1px solid var(--line-2);}
+  h2{font-size:20px; margin:0 0 6px; letter-spacing:-.01em;}
+  h2 .num{color:var(--brand); font-variant-numeric:tabular-nums; margin-right:10px;}
+  .sub{color:var(--ink-3); font-size:14px; margin:0 0 20px;}
+  h3{font-size:16px; margin:26px 0 8px;}
+  p{margin:0 0 14px;} ul{margin:0 0 14px; padding-left:22px;} li{margin:5px 0;}
+  .grid{display:grid; gap:14px;}
+  .g2{grid-template-columns:repeat(2,1fr);} .g3{grid-template-columns:repeat(3,1fr);}
+  .card{border:1px solid var(--line); border-radius:10px; padding:18px 20px; background:var(--bg);}
+  .card h4{margin:0 0 6px; font-size:15.5px;}
+  .card p{margin:0; font-size:14px; color:var(--ink-2);}
+  .card .tag{display:inline-block; font-size:11.5px; font-weight:700; letter-spacing:.04em;
+             padding:2px 8px; border-radius:5px; background:var(--brand-soft); color:var(--brand); margin-bottom:9px;}
+  table{width:100%; border-collapse:collapse; margin:6px 0 20px; font-size:14px;}
+  th,td{text-align:left; padding:10px 12px; border-bottom:1px solid var(--line-2); vertical-align:top;}
+  th{background:var(--bg-2); font-weight:700; color:var(--ink-2); font-size:13px; letter-spacing:.02em;}
+  td.k{width:30%; font-weight:600; color:var(--ink-2);}
+  tr:last-child td{border-bottom:none;}
+  table.bordered{border:1px solid var(--line); border-radius:10px; overflow:hidden;}
+  .fill{color:var(--ink-3); background:var(--warn-soft); border-radius:4px; padding:1px 10px; font-size:13px;}
+  .flow{display:grid; grid-template-columns:repeat(5,1fr); gap:8px; margin:8px 0 6px; text-align:center;}
+  .flow .step{border:1px solid var(--line); border-radius:9px; padding:14px 8px; background:var(--bg-2); position:relative;}
+  .flow .step .n{display:block; font-size:11.5px; font-weight:800; color:var(--brand); letter-spacing:.08em;}
+  .flow .step .t{display:block; font-size:13.5px; font-weight:700; margin:4px 0 3px;}
+  .flow .step .d{display:block; font-size:12px; color:var(--ink-3); line-height:1.5;}
+  .flow .step::after{content:"›"; position:absolute; right:-9px; top:50%; transform:translateY(-50%);
+                     color:var(--ink-3); font-size:19px; font-weight:700; z-index:1;}
+  .flow .step:last-child::after{content:none;}
+  .split{display:grid; grid-template-columns:1fr 1fr; gap:14px; margin:8px 0 18px;}
+  .box{border-radius:10px; padding:16px 18px; border:1px solid var(--line);}
+  .box h4{margin:0 0 8px; font-size:15px;}
+  .box ul{margin:0; padding-left:20px; font-size:14px;}
+  .box.ok{background:var(--ok-soft); border-color:#c8e6d8;} .box.ok h4{color:var(--ok);}
+  .box.stop{background:var(--stop-soft); border-color:#f5cfcc;} .box.stop h4{color:var(--stop);}
+  .note{border-left:3px solid var(--brand); background:var(--bg-2); padding:14px 18px; margin:16px 0 20px; font-size:14px;}
+  .note b{color:var(--brand);}
+  .note.warn{border-left-color:var(--warn);} .note.warn b{color:var(--warn);}
+  .pill{display:inline-block; font-size:12px; font-weight:700; padding:2px 9px; border-radius:5px;}
+  .pill.done{background:var(--ok-soft); color:var(--ok);}
+  .pill.wip{background:var(--warn-soft); color:var(--warn);}
+  .pill.todo{background:#f0f2f5; color:var(--ink-3);}
+  .kbd{font-family:ui-monospace,"Cascadia Mono",Consolas,monospace; font-size:13px;
+       background:var(--bg-2); border:1px solid var(--line); border-radius:4px; padding:1px 6px;}
+  footer{padding:26px 56px 0; margin-top:26px; border-top:1px solid var(--line-2); color:var(--ink-3); font-size:13px;}
+  @media (max-width:760px){
+    header.cover,section,footer{padding-left:24px; padding-right:24px;}
+    .g2,.g3,.split{grid-template-columns:1fr;}
+    .flow{grid-template-columns:1fr; } .flow .step::after{content:"⌄"; right:50%; top:auto; bottom:-14px; transform:translateX(50%);}
+  }
+  @media print{
+    body{background:#fff; font-size:11.5pt;}
+    .page{box-shadow:none; max-width:none;}
+    section{page-break-inside:auto;} h2{page-break-after:avoid;}
+    .card,.box,table,.flow{page-break-inside:avoid;}
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+<header class="cover">
+  <p class="eyebrow">TCA 個案管理系統</p>
+  <h1>衛教問答助理 — 功能說明 <span class="badge mvp">MVP 驗證階段</span></h1>
+  <p class="lede">
+    一套裝在院內電腦、<b>完全不連外網</b>就能運作的衛教問答助理。病人與家屬用白話問問題，
+    系統只根據我們自己上傳的衛教單回答，並附上出處；凡是超出衛教範圍的問題，一律不自己回答，
+    直接轉給個案管理師。
+  </p>
+  <div class="meta">
+    <span><b>文件日期</b>　2026-09-01</span>
+    <span><b>對象</b>　主管／跨部門</span>
+    <span><b>現階段範圍</b>　衛教問答（單一功能）</span>
+  </div>
+</header>
+
+<!-- 1 -->
+<section>
+  <h2><span class="num">01</span>這套系統在解決什麼問題</h2>
+  <p class="sub">為什麼要做，以及現在做到哪裡。</p>
+  <p>
+    個案管理師每天被大量重複性衛教問題佔用時間——「防跌要注意什麼」「傷口可不可以碰水」「糖尿病飲食怎麼吃」，
+    這些答案其實都寫在既有的衛教單裡，但病人與家屬拿到紙本後不會翻、也翻不到。
+  </p>
+  <p>
+    這套助理把院內既有的衛教單變成可以「用問的」。它的關鍵設計是<b>不讓 AI 自由發揮</b>：
+    回答只能取自我們上傳的衛教單，答案旁邊一定附出處；資料裡查不到、或問題本身超出衛教範圍，
+    它不會硬掰，而是直接登記成一筆待處理案件交回給個管師。
+  </p>
+  <div class="note">
+    <b>現階段刻意只做一件事。</b>
+    這一版是最小可行產品（MVP），只完成「衛教問答」這一條完整流程，用來驗證整條管線走得通、
+    答得準、也懂得在該轉介的時候轉介。評估分級、資源比對、生理數據紀錄等其他模組，
+    等這一條驗證成功後再依序擴充。
+  </div>
+</section>
+
+<!-- 2 -->
+<section>
+  <h2><span class="num">02</span>誰在用、怎麼用</h2>
+  <p class="sub">目前介面為網頁形式，三個頁籤即為三種使用情境。</p>
+  <div class="grid g3">
+    <div class="card">
+      <span class="tag">病人／家屬</span>
+      <h4>問答</h4>
+      <p>用自己的話打一個問題送出，畫面顯示白話回答，下方可展開「引用來源」看出自哪一份衛教單。</p>
+    </div>
+    <div class="card">
+      <span class="tag">個管師／衛教負責人</span>
+      <h4>上傳衛教文件</h4>
+      <p>把衛教單拖上去就完成建檔，系統自動處理。同名檔案重新上傳即為改版覆蓋，衛教單更新不必找工程師。</p>
+    </div>
+    <div class="card">
+      <span class="tag">個管師</span>
+      <h4>轉介清單</h4>
+      <p>凡 AI 判定不該由自己回答的問題，都會帶時間戳記列在這裡，個管師逐筆接手處理。</p>
+    </div>
+  </div>
+</section>
+
+<!-- 3 -->
+<section>
+  <h2><span class="num">03</span>一次問答，系統實際做了什麼</h2>
+  <p class="sub">從病人按下送出，到畫面出現答案，中間經過五個步驟。</p>
+  <div class="flow">
+    <div class="step"><span class="n">STEP 1</span><span class="t">收到提問</span><span class="d">病人以自然語言提問</span></div>
+    <div class="step"><span class="n">STEP 2</span><span class="t">查衛教庫</span><span class="d">找出最相關的 4 段內容</span></div>
+    <div class="step"><span class="n">STEP 3</span><span class="t">生成回答</span><span class="d">只准用查到的那幾段</span></div>
+    <div class="step"><span class="n">STEP 4</span><span class="t">自我判定</span><span class="d">這題我該不該答</span></div>
+    <div class="step"><span class="n">STEP 5</span><span class="t">回覆或轉介</span><span class="d">附出處，或登記給個管師</span></div>
+  </div>
+  <p style="margin-top:18px">
+    第 2 步是「語意查找」而非關鍵字比對——病人問「傷口可以洗澡嗎」，即使衛教單寫的是「沐浴」「碰水」，
+    一樣找得到。第 4 步是安全設計的核心：模型每次回答都必須同時回報「這題我答不答得了」，
+    答不了就走轉介，不會給一個看似完整卻沒有依據的答案。
+  </p>
+</section>
+
+<!-- 4 -->
+<section>
+  <h2><span class="num">04</span>安全設計：什麼一定轉介、什麼絕不發生</h2>
+  <p class="sub">醫療場域最怕的不是答不出來，而是答錯還講得很有把握。</p>
+  <div class="split">
+    <div class="box ok">
+      <h4>✓ 系統會回答的</h4>
+      <ul>
+        <li>衛教單上有明確依據的照護原則</li>
+        <li>疾病與症狀的一般認識</li>
+        <li>飲食、姿勢、環境等日常注意事項</li>
+        <li>回答一律繁體中文、白話、附出處</li>
+      </ul>
+    </div>
+    <div class="box stop">
+      <h4>✕ 系統一律轉介真人的</h4>
+      <ul>
+        <li>要求診斷、研判是不是某種疾病</li>
+        <li>判讀個人檢驗數值</li>
+        <li>調整藥物或胰島素劑量</li>
+        <li>緊急狀況處置</li>
+        <li>衛教庫裡查無依據的任何問題</li>
+      </ul>
+    </div>
+  </div>
+  <p>另有三道保險，確保系統「寧可不答，不可亂答」：</p>
+  <ul>
+    <li><b>查無資料即轉介</b>——知識庫找不到相關段落時，根本不會呼叫 AI 生成答案。</li>
+    <li><b>異常即轉介</b>——AI 回覆格式異常或服務中斷時，系統的預設行為是轉介，而非給出殘缺答案。</li>
+    <li><b>出處可回溯</b>——每則回答附引用段落，個管師可事後抽查答案是否確實出自衛教單。</li>
+  </ul>
+  <div class="note warn">
+    <b>目前已知的一項待決議題（2026-09-01 提出）。</b>
+    針對「糖尿病可不可以喝可樂／吃冰淇淋」這類<b>指名特定食物</b>的問題，模型目前會轉介個管師，
+    但衛教單其實寫得很清楚（含糖飲料建議避免）。這屬於「轉得太保守」——不影響安全，
+    但會讓助理顯得不好用，也會把個管師的待辦清單塞滿其實答得出來的題目。
+    建議的界線是改以<b>「有沒有涉及個人數值」</b>來判斷：食物的一般宜忌可答，
+    帶個人血糖值、劑量、症狀者才轉介。此為產品政策決定，待團隊與個管師共識後再調整。
+  </div>
+</section>
+
+<!-- 5 -->
+<section>
+  <h2><span class="num">05</span>資料存放與隱私</h2>
+  <p class="sub">這是本專案選型時最優先的考量。</p>
+  <table class="bordered">
+    <tr><td class="k">AI 模型放哪裡</td><td>裝在自己的電腦裡本機執行，不是呼叫 ChatGPT 之類的雲端服務。</td></tr>
+    <tr><td class="k">問題會不會外傳</td><td>不會。病人提問、衛教單內容、產生的回答全程留在本機，不經過任何外部廠商。</td></tr>
+    <tr><td class="k">要不要網路</td><td>安裝時下載模型需要一次性連網；<b>之後日常運作可完全離線</b>。</td></tr>
+    <tr><td class="k">要不要付費 API</td><td>不用。本地模式無 API 金鑰、無按次計費。</td></tr>
+    <tr><td class="k">衛教單存哪裡</td><td>原始檔與轉換後的索引都存在本機硬碟，不上傳雲端。</td></tr>
+    <tr><td class="k">轉介紀錄</td><td>存成本機檔案（一筆一行），含時間、問題、狀態，日後要接院內資料庫很容易。</td></tr>
+    <tr><td class="k">保留的彈性</td><td>若日後政策允許，改設定即可切換成雲端 OpenAI 模型，程式不必改寫。</td></tr>
+  </table>
+  <p>
+    採用本地模型的代價是回答速度與能力略遜於頂級雲端模型；換來的是<b>敏感醫療資料完全不出機房</b>，
+    在病歷相關情境下這個取捨是值得的。
+  </p>
+</section>
+
+<!-- 6 -->
+<section>
+  <h2><span class="num">06</span>硬體設備與執行環境</h2>
+  <p class="sub">本系統為單機部署，不需要伺服器叢集，也不需要雲端訂閱。</p>
+
+  <h3>目前使用的機器</h3>
+  <table class="bordered">
+    <thead>
+      <tr><th style="width:22%">項目</th><th style="width:39%">開發／測試機（現況）</th><th style="width:39%">正式部署主機</th></tr>
+    </thead>
+    <tbody>
+      <tr><td class="k">用途</td><td>程式開發、模型測試、評測跑分</td><td>實際提供個管師與病人使用</td></tr>
+      <tr><td class="k">主機</td><td>ASUS 桌上型工作站（DESKTOP-19K3SB6）</td><td><span class="fill">待填</span></td></tr>
+      <tr><td class="k">處理器</td><td>Intel Core i9-14900K（24 核／32 執行緒）</td><td><span class="fill">待填</span></td></tr>
+      <tr><td class="k">記憶體</td><td>128 GB</td><td><span class="fill">待填</span></td></tr>
+      <tr><td class="k">顯示卡（GPU）</td><td>NVIDIA GeForce RTX 4070，12 GB 顯示記憶體</td><td><span class="fill">待填</span></td></tr>
+      <tr><td class="k">儲存空間</td><td>1.8 TB SSD（目前可用約 1.5 TB）</td><td><span class="fill">待填</span></td></tr>
+      <tr><td class="k">作業系統</td><td>Windows 11 企業版</td><td><span class="fill">待填</span></td></tr>
+      <tr><td class="k">網路需求</td><td>院內網路即可；模型下載時需一次性外網</td><td>同左</td></tr>
+    </tbody>
+  </table>
+
+  <h3>硬體需求說明（給採購／資訊室評估用）</h3>
+  <ul>
+    <li><b>GPU 是效能關鍵。</b>本地 AI 模型（80 億參數等級）約需 9 GB 顯示記憶體，
+        現行 RTX 4070 的 12 GB 剛好容納。<b>建議規格：NVIDIA 顯卡、12 GB 以上顯示記憶體。</b></li>
+    <li><b>沒有 GPU 也能跑，但會慢。</b>純 CPU 運算可行，回答一題可能從數秒延長到數十秒，僅適合測試。</li>
+    <li><b>記憶體 32 GB 即足夠。</b>現行機器的 128 GB 遠超本專案所需，是既有設備而非需求下限。</li>
+    <li><b>硬碟預留 50 GB。</b>AI 模型每個約 5–20 GB，衛教單與索引本身極小（目前 5 份 PDF 合計不到 2 MB）。</li>
+    <li><b>單機即可服務。</b>前端、後端、AI 模型、資料庫全部跑在同一台，不需額外伺服器授權或雲端費用。</li>
+  </ul>
+
+  <h3>軟體環境</h3>
+  <table class="bordered">
+    <tr><td class="k">AI 語言模型</td><td>本地執行的繁體中文模型。預設採用 <b>TAIDE v2.0</b>（國科會 TAIDE 計畫開發，專為台灣繁中用詞語感調校，適合直接對病人說話的場景）。開發機另備有 Qwen 系列 4B～32B 與 Llama 3.1 等模型供比較測試。</td></tr>
+    <tr><td class="k">模型執行平台</td><td>Ollama（本機常駐服務）</td></tr>
+    <tr><td class="k">語意檢索</td><td>多語系向量模型（支援繁中，約 470 MB）＋ Chroma 向量資料庫，皆本機執行、免額外授權</td></tr>
+    <tr><td class="k">程式與介面</td><td>Python 3.11；後端 FastAPI、前端 Streamlit 網頁介面</td></tr>
+    <tr><td class="k">授權成本</td><td>全部為開源元件，無授權費用</td></tr>
+  </table>
+  <div class="note">
+    <b>遠端使用方式。</b>若系統裝在機房電腦，同仁要從自己的筆電操作，是透過既有的 SSH 連線轉發畫面，
+    <b>不需要對外開放任何連接埠</b>，符合校園／院內防火牆政策。
+  </div>
+</section>
+
+<!-- 7 -->
+<section>
+  <h2><span class="num">07</span>目前的知識庫內容</h2>
+  <p class="sub">已建檔的衛教單。新增只需在網頁上傳，無須改程式。</p>
+  <table class="bordered">
+    <thead><tr><th style="width:34%">衛教單</th><th>涵蓋主題</th></tr></thead>
+    <tbody>
+      <tr><td class="k">防噎</td><td>吞嚥障礙的成因與徵兆、適合／不適合的食物質地、進食姿勢與份量</td></tr>
+      <tr><td class="k">防跌倒</td><td>跌倒風險因子、居家環境與行動注意事項</td></tr>
+      <tr><td class="k">傷口照護須知</td><td>傷口清潔、換藥、觀察重點與異常徵象</td></tr>
+      <tr><td class="k">糖尿病飲食</td><td>飲食原則、宜忌食物、血糖相關生活注意事項</td></tr>
+      <tr><td class="k">認識乳癌</td><td>疾病認識、治療與照護相關衛教</td></tr>
+    </tbody>
+  </table>
+  <p>支援檔案格式：PDF、純文字、Markdown。上傳後系統自動切成適當長度的段落並建立索引，全程不需人工整理。</p>
+</section>
+
+<!-- 8 -->
+<section>
+  <h2><span class="num">08</span>怎麼驗證它夠好——評測機制</h2>
+  <p class="sub">不憑感覺說「還不錯」，用可重複的方式量化。</p>
+  <p>系統內建一套評測工具，設計目的是讓<b>個管師用 Excel 就能打分</b>，不需要碰程式：</p>
+  <ol>
+    <li>已建立 <b>50 題</b>衛教考題題庫，涵蓋五份衛教單，每題附標準答案與出處頁碼。</li>
+    <li>執行評測後，系統逐題跑一次<b>與實際產品完全相同的流程</b>，輸出一份 Excel。</li>
+    <li>Excel 內每題並排呈現：問題、標準答案、模型回答、是否轉介、引用出處。</li>
+    <li>右側黃色欄位留給個管師勾選：準確度（1–5）、有無依據（是／否）、有用性（1–5）、該不該轉介（是／否）、備註。</li>
+    <li>另有「統計摘要」分頁自動計算轉介率、分主題轉介統計、使用的模型與參數，方便換模型後前後對照。</li>
+  </ol>
+  <h3>驗收指標</h3>
+  <table class="bordered">
+    <thead><tr><th style="width:26%">指標</th><th style="width:22%">目標</th><th>說明</th></tr></thead>
+    <tbody>
+      <tr><td class="k">回答準確率</td><td>≥ 80%</td><td>答對且確實有衛教單依據的比例</td></tr>
+      <tr><td class="k">轉介判斷正確率</td><td>不漏轉為優先</td><td>該轉真人時有沒有正確轉介；漏轉（危險）比誤轉（囉嗦）嚴重得多</td></tr>
+      <tr><td class="k">有用性</td><td>個管師主觀評分</td><td>是否真的省時、願不願意在工作中使用</td></tr>
+    </tbody>
+  </table>
+  <div class="note warn">
+    <b>目前進度：評測工具與 50 題題庫已就緒，個管師的正式評分尚未完成。</b>
+    在拿到這份評分結果之前，準確率仍屬未經驗證，本系統應維持在測試環境、
+    <b>尚不建議直接對病人開放</b>。
+  </div>
+</section>
+
+<!-- 9 -->
+<section>
+  <h2><span class="num">09</span>目前限制</h2>
+  <ul>
+    <li><b>知識邊界就是衛教單。</b>衛教單沒寫的，系統一律不會回答——這是刻意的設計，但也意味著知識庫的完整度直接決定可用範圍。</li>
+    <li><b>轉介判斷偏保守。</b>如第 04 節所述，部分「指名特定食物」的問題會被過度轉介，待政策定案後調整。</li>
+    <li><b>尚未串接院內系統。</b>目前沒有病人身分識別、沒有接病歷、沒有登入權限管理；轉介清單為獨立檔案，不會回寫任何院內系統。</li>
+    <li><b>單機容量。</b>本地模型一次處理一題，尚未做多人同時使用的壓力測試。</li>
+    <li><b>僅衛教問答。</b>評估分級、資源比對、生理數據紀錄皆尚未開發。</li>
+  </ul>
+</section>
+
+<!-- 10 -->
+<section>
+  <h2><span class="num">10</span>後續規劃</h2>
+  <table class="bordered">
+    <thead><tr><th style="width:16%">階段</th><th style="width:26%">項目</th><th>內容</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><span class="pill done">已完成</span></td>
+        <td class="k">衛教問答主流程</td>
+        <td>文件上傳建檔、語意檢索、附出處回答、自動轉介、評測工具與題庫</td>
+      </tr>
+      <tr>
+        <td><span class="pill wip">進行中</span></td>
+        <td class="k">個管師評分驗證</td>
+        <td>50 題實測評分、確認準確率與轉介判斷；同步拍板特定食物類問題的轉介政策</td>
+      </tr>
+      <tr>
+        <td><span class="pill todo">下一步</span></td>
+        <td class="k">評估分級</td>
+        <td>驗證成功後啟動</td>
+      </tr>
+      <tr>
+        <td><span class="pill todo">後續</span></td>
+        <td class="k">資源比對</td>
+        <td>依個案需求媒合可用資源</td>
+      </tr>
+      <tr>
+        <td><span class="pill todo">後續</span></td>
+        <td class="k">生理數據紀錄</td>
+        <td>個案生理數值的收集與追蹤</td>
+      </tr>
+    </tbody>
+  </table>
+  <h3>需要各位協助決定的事</h3>
+  <ul>
+    <li><b>轉介界線由誰拍板</b>——「食物的一般宜忌可否直接回答」需要個管師團隊的共識（見第 04 節）。</li>
+    <li><b>評分人力與時程</b>——50 題的評分需要個管師約半天時間，請協助安排。</li>
+    <li><b>正式部署機器</b>——第 06 節表格右欄待資訊室確認規格與擺放位置。</li>
+    <li><b>擴充衛教單清單</b>——目前 5 份，請提供優先要納入的其他衛教單。</li>
+  </ul>
+</section>
+
+<footer>
+  TCA 個案管理系統 · 衛教問答 MVP 功能說明 · 2026-09-01<br>
+  本文件描述系統於此日期的實際狀態；技術安裝與操作指令請另見專案 README。
+</footer>
+
+</div>
+</body>
+</html>
