@@ -1,0 +1,15 @@
+檢索命中率 100%｜轉介率 14%｜平均覆蓋率 57%｜引用正確率 100%
+======================================== short test summary info ========================================
+SKIPPED [7] tests/test_answer.py:62: 這題被轉介（另由 test_not_falsely_escalated 記錄）
+SKIPPED [7] tests/test_answer.py:71: 這題被轉介，沒有內容可比對
+SKIPPED [1] tests/test_escalation.py:77: 題庫沒有「應轉介」欄位（可在 CSV 加一欄，填「是／否」）
+FAILED tests/test_answer.py::test_not_falsely_escalated[Q12] - AssertionError: 題號 12「哪些藥物可能增加跌倒風險？」被轉介，但這題衛教單（衛教單-防跌倒.pdf）有答案。
+FAILED tests/test_answer.py::test_not_falsely_escalated[Q14] - AssertionError: 題號 14「夜間照明要如何安排？」被轉介，但這題衛教單（衛教單-防跌倒.pdf）有答案。
+FAILED tests/test_answer.py::test_not_falsely_escalated[Q34] - AssertionError: 題號 34「食用油可選擇哪些種類？」被轉介，但這題衛教單（衛教單-飲食糖尿病.pdf）有答案。
+FAILED tests/test_answer.py::test_not_falsely_escalated[Q35] - AssertionError: 題號 35「哪些甜食或含糖食品應避免？」被轉介，但這題衛教單（衛教單-飲食糖尿病.pdf）有...
+FAILED tests/test_answer.py::test_not_falsely_escalated[Q38] - AssertionError: 題號 38「每天建議喝多少水？」被轉介，但這題衛教單（衛教單-飲食糖尿病.pdf）有答案。
+FAILED tests/test_answer.py::test_not_falsely_escalated[Q41] - AssertionError: 題號 41「哪些情況屬於乳癌高危險群？」被轉介，但這題衛教單（衛教單-認識乳癌.pdf）有答...
+FAILED tests/test_answer.py::test_not_falsely_escalated[Q42] - AssertionError: 題號 42「乳癌常見的主要症狀有哪些？」被轉介，但這題衛教單（衛教單-認識乳癌.pdf）有答...
+FAILED tests/test_answer.py::test_answer_covers_reference[Q6] - AssertionError: 題號 6「吞嚥困難者可選擇哪些食物？」覆蓋率只有 9%（門檻 15%），疑似答非所問。
+FAILED tests/test_answer.py::test_answer_covers_reference[Q50] - AssertionError: 題號 50「發現乳房異常時應該怎麼做？」覆蓋率只有 14%（門檻 15%），疑似答非所問。
+========================= 9 failed, 565 passed, 15 skipped in 288.26s (0:04:48) =========================
