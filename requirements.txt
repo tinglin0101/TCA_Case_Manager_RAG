@@ -1,4 +1,4 @@
-# --- LLM ---
+﻿# --- LLM ---
 # openai 套件同時用於「雲端 OpenAI」與「本地端 OpenAI 相容伺服器（如 Ollama）」，
 # 換本地 LLM 不需要額外套件，只要改 .env 的 LLM_PROVIDER / LLM_BASE_URL / LLM_MODEL。
 openai>=1.40                 # 需支援 structured outputs（beta.chat.completions.parse）
